@@ -37,13 +37,5 @@
   python3 manage.py runserver
   ```
 
-Примеры запросов:
-<details>
-<summary>Список постов без пагинации:</summary>
- ```Bash
-  GET /api/v1/posts/
-  Content-Type: application/json
-  ```
-  
-  
-</details>
+Полная интерактивная документация доступна по ссылке:  
+[**Открыть api-docs.html**](./api-docs.html)
