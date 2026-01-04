@@ -3,31 +3,19 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from posts.models import Comment, Follow, Group, Post
+from .viewsets import CreateListViewSet, BaseViewSet
 
 from .mixins import (
     AuthorFromRequestMixin,
     AuthorPostFromRequestMixin,
     UserFromRequestMixin,
 )
-from .permissions import OwnerOrReadOnly
 from .serializers import (
     CommentSerializer,
     FollowSerializer,
     GroupSerializer,
     PostSerializer,
 )
-
-
-class BaseViewSet(viewsets.ModelViewSet):
-    """Базовый вьюсет.
-
-    Устанавливает:
-                - доступ для чтения всем.
-                - доступ для изменения только автору.
-                - пагинация по условиям из запроса.
-    """
-    permission_classes = (OwnerOrReadOnly,)
-    pagination_class = LimitOffsetPagination
 
 
 class PostViewSet(AuthorFromRequestMixin, BaseViewSet):
@@ -58,13 +46,14 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = LimitOffsetPagination
 
 
-class FollowViewSet(UserFromRequestMixin, viewsets.ModelViewSet):
+class FollowViewSet(UserFromRequestMixin, CreateListViewSet):
     """Вьюсет для работы с подписками.
 
     Доступен только авторизованным пользователям.
     """
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username',)
 
