@@ -43,5 +43,3 @@ class UserFromRequestMixin:
 
     def perform_create(self, serializer: 'FollowSerializer') -> None:
         serializer.save(user=self.request.user)
-
-
