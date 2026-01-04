@@ -36,7 +36,14 @@
   ```Bash
   python3 manage.py runserver
   ```
+
+Примеры запросов:
 <details>
-<summary>**Примеры:**</summary>
+<summary>Список постов без пагинации:</summary>
+ ```Bash
+  GET /api/v1/posts/
+  Content-Type: application/json
+  ```
+  
   
 </details>
