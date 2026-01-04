@@ -1,23 +1,90 @@
+from typing import Any
+
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 
-
-from posts.models import Comment, Post
+from posts.models import Comment, Follow, Group, Post, User
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    """Сериализатор для постов.
+
+    Поля:
+        Все поля из модели Post.
+        author - username текущего пользователя.
+    """
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Post
+        read_only_fields = ('pub_date', 'id')
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
-    )
+    """Сериализатор для комментариев.
+
+    Поля:
+        Все поля из модели Comment.
+        author - username текущего пользователя.
+    """
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Comment
+        read_only_fields = ('created', 'post', 'id')
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Сериализатор для сообществ.
+
+    Поля:
+        Все поля из модели Group.
+    """
+
+    class Meta:
+        fields = '__all__'
+        model = Group
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    """Сериализатор для подписок.
+
+    Поля:
+        user - username текущего пользователя.
+        following - username пользователя, на которого оформляется подписка.
+    """
+    user = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    following = serializers.SlugRelatedField(slug_field='username',
+                                             queryset=User.objects.all())
+
+    class Meta:
+        fields = ('user', 'following')
+        model = Follow
+        read_only_fields = ('id',)
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Проверяет корректность подписки.
+
+        Args:
+            data: Валидированные данные из запроса.
+
+        Raises:
+            serializers.ValidationError:
+                                    - При попытке подписаться на самого себя.
+                                    - При попытке повторной подписки.
+
+        Returns:
+            Исходные данные.
+        """
+        user: User = self.context['request'].user
+        following: User = data['following']
+        if user == following:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя.')
+        if Follow.objects.filter(user=user, following=following).exists():
+            raise serializers.ValidationError(
+                f'Вы уже подписаны на {following}.')
+        return data
