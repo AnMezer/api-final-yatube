@@ -37,5 +37,4 @@
   python3 manage.py runserver
   ```
 
-Полная интерактивная документация доступна по ссылке:  
-[**Открыть api-docs.html**](./api-docs.html)
+[**Полная документация.**](https://anmezer.github.io/api-final-yatube/)
