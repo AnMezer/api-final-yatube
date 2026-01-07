@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from posts.models import Post
 
 
-class OwnerOrReadOnly(permissions.BasePermission):
+class IsOwnerOrReadOnly(permissions.BasePermission):
     """Разрешает анонимным пользователям только безопасные методы.
 
     Авторизованные пользователи могут изменять только те объекты,

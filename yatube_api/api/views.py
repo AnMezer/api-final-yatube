@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
+
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from posts.models import Comment, Follow, Group, Post
-from .viewsets import CreateListViewSet, BaseViewSet
+from posts.models import Comment, Group, Post
 
 from .mixins import (
     AuthorFromRequestMixin,
@@ -16,6 +18,16 @@ from .serializers import (
     GroupSerializer,
     PostSerializer,
 )
+from .viewsets import BaseViewSet, CreateListViewSet
+
+if TYPE_CHECKING:
+    from django.db.models import Manager
+
+    from posts.models import Follow
+
+    class User:
+        follower: Manager[Follow]
+        following: Manager[Follow]
 
 
 class PostViewSet(AuthorFromRequestMixin, BaseViewSet):
@@ -32,7 +44,8 @@ class CommentViewSet(AuthorPostFromRequestMixin, BaseViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        return Comment.objects.filter(post_id=self.kwargs['post_pk'])
+        post = get_object_or_404(Post, id=self.kwargs['post_pk'])
+        return post.comments.all()
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -58,4 +71,5 @@ class FollowViewSet(UserFromRequestMixin, CreateListViewSet):
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        user: User = self.request.user
+        return user.follower.all()

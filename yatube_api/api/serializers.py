@@ -1,5 +1,3 @@
-from typing import Any
-
 from rest_framework import serializers
 
 from posts.models import Comment, Follow, Group, Post, User
@@ -66,11 +64,11 @@ class FollowSerializer(serializers.ModelSerializer):
         model = Follow
         read_only_fields = ('id',)
 
-    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+    def validate_following(self, value):
         """Проверяет корректность подписки.
 
         Args:
-            data: Валидированные данные из запроса.
+            value: Валидированное значение поля following
 
         Raises:
             serializers.ValidationError:
@@ -80,12 +78,11 @@ class FollowSerializer(serializers.ModelSerializer):
         Returns:
             Исходные данные.
         """
-        user: User = self.context['request'].user
-        following: User = data['following']
-        if user == following:
+        user = self.context['request'].user
+        if user == value:
             raise serializers.ValidationError(
                 'Нельзя подписаться на самого себя.')
-        if Follow.objects.filter(user=user, following=following).exists():
+        if Follow.objects.filter(user=user, following=value).exists():
             raise serializers.ValidationError(
-                f'Вы уже подписаны на {following}.')
-        return data
+                f'Вы уже подписаны на {value}.')
+        return value

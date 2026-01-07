@@ -3,9 +3,11 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from rest_framework.request import Request
 
-    from .serializers import (CommentSerializer,
-                              FollowSerializer,
-                              PostSerializer)
+    from .serializers import (
+        CommentSerializer,
+        FollowSerializer,
+        PostSerializer,
+    )
 
 
 class AuthorFromRequestMixin:

@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import slugify
@@ -13,9 +15,13 @@ class Post(models.Model):
     image = models.ImageField(
         upload_to='posts/', null=True, blank=True)
     group = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True)
+    ordered_by = ('-pub_date')
 
     def __str__(self):
         return self.text
+
+    if TYPE_CHECKING:
+        comments: models.Manager['Comment']
 
 
 class Comment(models.Model):
@@ -41,6 +47,8 @@ class Group(models.Model):
         return self.title
 
     def save(self, *args, ** kwargs):
+        """Автоматически получает slug из названия сообщества.
+        """
         if not self.slug:
             self.slug = slugify(self.title)
         self.full_clean()
@@ -54,6 +62,9 @@ class Follow(models.Model):
                                   related_name='following')
 
     class Meta:
-        unique_together = ('user', 'following')
+        models.UniqueConstraint(fields=('user', 'following'),
+                                name='unique_follow')
+        models.CheckConstraint(condition=~models.Q(user=models.F('following')),
+                               name='disable_self_follow')
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
