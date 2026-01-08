@@ -1,13 +1,12 @@
 from typing import TYPE_CHECKING, Any
 
+from django.shortcuts import get_object_or_404
+
+from posts.models import Post
+
 if TYPE_CHECKING:
     from rest_framework.request import Request
-
-    from .serializers import (
-        CommentSerializer,
-        FollowSerializer,
-        PostSerializer,
-    )
+    from rest_framework.serializers import Serializer
 
 
 class AuthorFromRequestMixin:
@@ -18,7 +17,7 @@ class AuthorFromRequestMixin:
     request: 'Request'
     kwargs: dict[str, Any]
 
-    def perform_create(self, serializer: 'PostSerializer') -> None:
+    def perform_create(self, serializer: 'Serializer') -> None:
         serializer.save(author=self.request.user)
 
 
@@ -30,9 +29,13 @@ class AuthorPostFromRequestMixin:
     request: 'Request'
     kwargs: dict[str, Any]
 
-    def perform_create(self, serializer: 'CommentSerializer') -> None:
-        serializer.save(author=self.request.user,
-                        post_id=self.kwargs['post_pk'])
+    def get_post(self) -> Post:
+        """Возвращает пост с id из запроса"""
+        return get_object_or_404(Post, id=self.kwargs['post_pk'])
+
+    def perform_create(self, serializer: 'Serializer') -> None:
+        post = self.get_post()
+        serializer.save(author=self.request.user, post=post)
 
 
 class UserFromRequestMixin:
@@ -43,5 +46,5 @@ class UserFromRequestMixin:
     request: 'Request'
     kwargs: dict[str, Any]
 
-    def perform_create(self, serializer: 'FollowSerializer') -> None:
+    def perform_create(self, serializer: 'Serializer') -> None:
         serializer.save(user=self.request.user)

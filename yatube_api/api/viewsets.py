@@ -1,5 +1,6 @@
 from rest_framework import mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .permissions import IsOwnerOrReadOnly
 
@@ -12,7 +13,7 @@ class BaseViewSet(viewsets.ModelViewSet):
                 - доступ для изменения только автору.
                 - пагинация по условиям из запроса.
     """
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly, IsAuthenticatedOrReadOnly)
     pagination_class = LimitOffsetPagination
 
 

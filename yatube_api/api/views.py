@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -44,7 +43,7 @@ class CommentViewSet(AuthorPostFromRequestMixin, BaseViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        post = get_object_or_404(Post, id=self.kwargs['post_pk'])
+        post = self.get_post()
         return post.comments.all()
 
 
